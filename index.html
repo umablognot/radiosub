@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RADIOSUB-1 // Gerçek Zamanlı Radyo Altyazı ve Çevirisi</title>
+  <meta name="description" content="WebSDR, amatör radyo için ücretsiz gerçek zamanlı altyazı ve çeviri. Ses ve Mors kodu CW desteği.">
+  <meta name="theme-color" content="#0e0e0e">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📻</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ════════════════ HEADER ════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="device-name">
+      RADIOSUB<span>// v1.0</span>
+    </div>
+    <div class="header-meta">
+      <span id="clockDisplay">00:00:00</span>
+      <div class="lang-toggle">
+        <button class="lang-btn" data-lang-btn="tr">TR</button>
+        <button class="lang-btn" data-lang-btn="en">EN</button>
+      </div>
+      <a class="header-link" href="https://github.com/altunsumerve/radiosub" target="_blank" rel="noopener">[ GITHUB ]</a>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main>
+
+  <!-- ── CONTROLS PANEL ── -->
+  <div class="panel controls-panel">
+    <div class="panel-label" data-i18n="ctrl-unit">// KONTROL ÜNİTESİ</div>
+    <div class="controls-grid">
+
+      <!-- Mode -->
+      <div class="controls-row">
+        <div>
+          <div class="ctrl-label" data-i18n="mode-select">// MOD SEÇ</div>
+          <div class="toggle-group">
+            <button class="toggle-btn active" data-mode="auto" data-i18n="btn-mode-auto">⬡ OTO</button>
+            <button class="toggle-btn" data-mode="speech" data-i18n="btn-mode-speech">▶ SES</button>
+            <button class="toggle-btn" data-mode="morse" data-i18n="btn-mode-morse">·-· MORS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Language selectors -->
+      <div class="lang-row">
+        <div class="lang-group" id="sourceLangGroup">
+          <div class="ctrl-label" data-i18n="source-lang-label">// KAYNAK DİL (SES)</div>
+          <select id="sourceLang">
+            <option value="en-US">EN — English (US)</option>
+            <option value="en-GB">EN — English (UK)</option>
+            <option value="de-DE">DE — Deutsch</option>
+            <option value="ru-RU">RU — Русский</option>
+            <option value="es-ES">ES — Español</option>
+            <option value="fr-FR">FR — Français</option>
+            <option value="it-IT">IT — Italiano</option>
+            <option value="pt-PT">PT — Português</option>
+            <option value="nl-NL">NL — Nederlands</option>
+            <option value="ja-JP">JA — 日本語</option>
+            <option value="zh-CN">ZH — 中文</option>
+            <option value="ar-SA">AR — العربية</option>
+            <option value="tr-TR">TR — Türkçe</option>
+            <option value="pl-PL">PL — Polski</option>
+            <option value="sv-SE">SV — Svenska</option>
+            <option value="uk-UA">UK — Українська</option>
+          </select>
+        </div>
+        <div class="lang-arrow">→</div>
+        <div class="lang-group">
+          <div class="ctrl-label" data-i18n="target-lang-label">// HEDEF DİL</div>
+          <select id="targetLang">
+            <option value="tr">TR — Türkçe</option>
+            <option value="en">EN — English</option>
+            <option value="de">DE — Deutsch</option>
+            <option value="ru">RU — Русский</option>
+            <option value="es">ES — Español</option>
+            <option value="fr">FR — Français</option>
+            <option value="it">IT — Italiano</option>
+            <option value="pt">PT — Português</option>
+            <option value="nl">NL — Nederlands</option>
+            <option value="ja">JA — 日本語</option>
+            <option value="zh">ZH — 中文</option>
+            <option value="ar">AR — العربية</option>
+            <option value="pl">PL — Polski</option>
+            <option value="sv">SV — Svenska</option>
+            <option value="uk">UK — Українська</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Auto mode info bar -->
+      <div class="auto-info-bar" id="autoInfoBar">
+        <span data-i18n="scan-window">TARAMA</span>
+        <span id="autoCountdown" class="blink">--</span>
+        <span data-i18n="sec">SN</span>
+        <span style="color:#1a3a1a">|</span>
+        <span data-i18n="detected-label">ALGILANDI:</span>
+        <span id="detectedLangDisplay">---</span>
+      </div>
+
+      <!-- TX Button -->
+      <button class="tx-btn" id="mainBtn">
+        <span>▶</span>
+        <span class="btn-text">BAŞLAT</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── STATUS BAR ── -->
+  <div class="status-bar">
+    <span class="status-code" id="statusCode">[HAZ]</span>
+    <span class="status-msg"  id="statusMsg">RADIOSUB v1.0 — HAZIR</span>
+    <div class="vu-wrap">
+      <span class="vu-label" data-i18n="vu-label">SİN</span>
+      <div class="vu-meter" id="vuMeter">
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+        <div class="vu-seg"></div><div class="vu-seg"></div>
+      </div>
+    </div>
+    <div class="morse-info" id="morseInfo">
+      <span id="wpmDisplay">-- WPM</span>
+      <span class="morse-raw-label">CW:</span>
+      <span id="morseRaw"></span>
+    </div>
+  </div>
+
+  <!-- ── TRANSCRIPT SCREEN ── -->
+  <div class="panel screen-panel">
+    <div class="screen-header">
+      <span class="screen-title" data-i18n="rx-title">// ALIM TRANSKRİPTİ</span>
+      <button class="copy-btn" id="copyTranscript" data-i18n="copy">[ KOPYALA ]</button>
+    </div>
+    <div class="crt-screen" id="subtitleBox">
+      <span class="ph-text">// SİNYAL BEKLENİYOR_</span>
+    </div>
+  </div>
+
+  <!-- ── TRANSLATION SCREEN ── -->
+  <div class="panel screen-panel translation-screen">
+    <div class="screen-header">
+      <span class="screen-title" data-i18n="trans-title">// ÇEVİRİ</span>
+      <span class="api-indicator" id="apiIndicator"></span>
+      <button class="copy-btn" id="copyTranslation" data-i18n="copy">[ KOPYALA ]</button>
+    </div>
+    <div class="crt-screen" id="translationBox">
+      <span class="ph-text">// ÇEVİRİ TAMPONU BOŞ_</span>
+    </div>
+  </div>
+
+  <!-- ── HISTORY ── -->
+  <div class="panel history-panel">
+    <div class="history-header">
+      <span class="history-title" data-i18n="history-title">// OTURUM KAYDI</span>
+      <button class="clear-btn" id="clearHistory" data-i18n="clr">[ TEMİZLE ]</button>
+    </div>
+    <div class="history-box" id="historyBox">
+      <span class="ph">// OTURUM KAYDI BOŞ</span>
+    </div>
+  </div>
+
+  <!-- ── GUIDE ── -->
+  <div class="panel guide-panel">
+    <div class="panel-label" data-i18n="manual-title">// OPERATÖR KILAVUZU</div>
+
+    <div class="guide-tabs">
+      <button class="guide-tab active" data-tab="auto" data-i18n="tab-auto">OTO MOD</button>
+      <button class="guide-tab" data-tab="websdr" data-i18n="tab-websdr">WEBSDR</button>
+      <button class="guide-tab" data-tab="radio" data-i18n="tab-radio">AMATÖR RADYO</button>
+      <button class="guide-tab" data-tab="morse" data-i18n="tab-morse">MORS CW</button>
+    </div>
+
+    <div id="guideContent">
+      <div class="guide-tab-content" data-tab="auto"></div>
+      <div class="guide-tab-content" data-tab="websdr" style="display:none"></div>
+      <div class="guide-tab-content" data-tab="radio" style="display:none"></div>
+      <div class="guide-tab-content" data-tab="morse" style="display:none"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <p data-i18n="footer-1">RADIOSUB-1 // AÇIK KAYNAK RADYO ALTYAZI ARACI // MIT LİSANSI</p>
+  <p><a href="https://github.com/altunsumerve/radiosub" target="_blank" rel="noopener">GITHUB.COM/ALTUNSUMERVE/RADIOSUB</a> // <span data-i18n="footer-2-short">SUNUCU YOK // %100 ÜCRETSİZ</span></p>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/translator.js"></script>
+<script src="js/morse.js"></script>
+<script src="js/speech.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
