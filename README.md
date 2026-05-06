@@ -1,12 +1,30 @@
 # 📻 RADIOSUB-1
 
-**Real-time radio subtitle & translator — 100% free, no backend, runs entirely in your browser.**
+**Browser-based radio subtitle & translation tool — free, no backend, no API keys.**
 
 Point your phone microphone at any radio, scanner, or WebSDR speaker — get live subtitles with automatic language detection and translation. Supports voice transcription in 15+ languages and Morse code (CW) decoding.
 
 🔗 **[Live Demo](https://altunsumerve.github.io/radiosub)**
 
 > **UI design**: Retro CRT terminal / phosphor green aesthetic
+
+---
+
+## What This Tool Is — and Isn't
+
+**What it does:**
+- Captures audio from your radio's speaker via your phone/laptop microphone
+- Uses your browser's built-in Web Speech API for voice-to-text
+- Detects the spoken language and translates it using free public APIs
+- Decodes Morse code (CW) signals using an in-browser FFT analyzer
+
+**What it isn't:**
+- ❌ Not a professional simultaneous interpretation system
+- ❌ Not an SDR signal processing tool — it reads audio from a microphone, not RF directly
+- ❌ Not reliable on encrypted, digital voice (DMR/D-STAR/P25), or heavily noisy signals
+- ❌ Not a substitute for a human translator in critical situations
+
+**Honest expectation:** This is a **hybrid orchestration tool** that cleverly combines existing free services. Its quality depends on the third-party speech recognition and translation services it relies on. Results vary with audio quality, accent, speaking speed, and signal strength.
 
 ---
 
@@ -22,11 +40,27 @@ That's it. No installs, no accounts, no backend.
 
 ---
 
+## Approach: Hybrid Architecture
+
+RadioSub is **not** an end-to-end trained model. It is an orchestrator that wires together free services in the browser:
+
+| Layer | Service | Why |
+|-------|---------|-----|
+| Speech → Text | Browser Web Speech API (Chrome/Edge) | Free, built-in, no key |
+| Language detection | Google Translate unofficial endpoint | Reliable, no key, CORS-open |
+| Translation | MyMemory (primary) + Lingva (fallback) | Free public APIs |
+| Morse decoding | Custom FFT-based decoder | Runs locally in browser |
+
+**Advantage:** No backend, no API keys, deploys for free on GitHub Pages.
+**Trade-off:** Result quality is bounded by what these third-party services provide.
+
+---
+
 ## Features
 
 | | Feature | Detail |
 |-|---------|--------|
-| ⬡ | **Auto Mode** | Cycles through 7 languages (EN→RU→DE→IT→FR→ES→TR) in 5-second windows to identify the spoken language within 35 seconds |
+| ⬡ | **Auto Mode** | Cycles through 7 languages (EN→RU→DE→IT→FR→ES→TR) in 5-second windows over 35 seconds, votes on best match |
 | 🎙️ | **Voice Mode** | Manual language selection + Web Speech API (Chrome/Edge built-in, 15+ languages) |
 | ·-· | **Morse Mode** | FFT-based CW decoder — auto-calibrates to operator speed, outputs Latin characters |
 | 🌐 | **Translation** | MyMemory API (primary) + Lingva fallback — free, no API key needed |
@@ -52,7 +86,7 @@ START RX
 At any point: transcript → Google Translate detect API
   ├─ Language confirmed? → "LANGUAGE DETECTED: ITALIAN (92%)"
   │   → Restart Speech API in Italian → translate continuously
-  └─ 30s without detection → "LANGUAGE NOT DETECTED — TRY AGAIN"
+  └─ No detection within 35s → "LANGUAGE NOT DETECTED — TRY AGAIN"
 ```
 
 ---
@@ -103,6 +137,37 @@ For cleaner input without background noise, connect via cable:
 
 ---
 
+## Limitations & Known Issues
+
+Being upfront about where this tool struggles:
+
+### Voice / Auto Mode
+- **Noisy signals:** Heavy QRM, QRN, or low SNR severely degrades transcription
+- **Multiple speakers:** Web Speech API is designed for single-speaker input
+- **Fast or accented speech:** Recognition accuracy drops with rapid speech, strong regional accents, or non-native pronunciation
+- **Short utterances:** Auto language detection can guess wrong on phrases under ~6 words
+- **Similar languages:** Detection may confuse closely related languages (Spanish/Italian/Portuguese, Russian/Ukrainian)
+- **Browser dependency:** Web Speech API quality varies between Chrome versions and is unavailable in Firefox
+
+### Morse Mode
+- **Signal fading (QSB):** Extended fades can break character detection
+- **Sudden WPM changes:** Decoder needs ~5 marks to recalibrate after a speed change
+- **Heavy interference:** Multiple overlapping CW signals confuse the FFT peak detection
+- **Non-standard prosigns:** Custom or rare prosigns appear as `[pattern]` rather than meaning
+
+### Translation
+- **MyMemory daily limit:** 1000 words/day for anonymous users — falls back to Lingva when exceeded
+- **Technical jargon:** Free APIs often miss radio terminology, callsigns, Q-codes
+- **Idioms and slang:** Literal translation may produce awkward results
+- **Lingva uptime:** Community-hosted instances occasionally go offline
+
+### General
+- **Background noise:** Room acoustics, fans, traffic noise all degrade results
+- **Speaker volume:** Too loud → distortion; too quiet → missed words
+- **Phone microphone quality:** Older phones or laptops with poor mics give worse results
+
+---
+
 ## Browser Requirements
 
 | Browser | Auto / Voice | Morse |
@@ -117,6 +182,17 @@ For cleaner input without background noise, connect via cable:
 
 > ⚠️ **Do not open via `file://`** — browser won't remember microphone permission.
 > Use `http://localhost` for local testing or deploy to GitHub Pages.
+
+---
+
+## Legal & Ethical Notice
+
+⚠️ **Always comply with local regulations.** In some jurisdictions:
+- Recording or rebroadcasting non-public radio communications is restricted
+- Sharing transcripts of amateur radio QSOs without consent may violate ham radio etiquette
+- Monitoring certain frequencies (e.g., police, military) is restricted or illegal
+
+This tool is intended for **public broadcast monitoring, WebSDR exploration, ham radio educational use, and personal language learning**. The developer assumes no responsibility for misuse.
 
 ---
 
@@ -144,9 +220,11 @@ For cleaner input without background noise, connect via cable:
 | API | Purpose | Limit |
 |-----|---------|-------|
 | Web Speech API | Speech-to-text | Browser built-in, free |
-| Google Translate (unofficial) | Language detection | No key, no limit |
+| Google Translate (unofficial) | Language detection | No key, no documented limit |
 | MyMemory | Translation (primary) | 1000 words/day anonymous |
 | Lingva | Translation (fallback) | Community hosted |
+
+> **Note on third-party APIs:** RadioSub depends on free public services that the developer does not control. If MyMemory, Lingva, or the Google Translate detection endpoint changes its terms or goes offline, parts of the app may stop working until a fix is pushed.
 
 ---
 
@@ -169,6 +247,15 @@ radiosub/
 └── .gitignore
 ```
 
+---
+
+## Contributing
+
+Issues and pull requests welcome. If you report a bug, please include:
+- Browser + version
+- Mode in use (Auto / Voice / Morse)
+- Source language (if known)
+- Sample audio characteristics (clean / noisy / WebSDR / direct cable)
 
 ---
 
