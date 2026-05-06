@@ -1,12 +1,30 @@
 # 📻 RADIOSUB-1
 
-**Gerçek zamanlı radyo altyazısı ve çeviri — tamamen ücretsiz, backend yok, tarayıcıda çalışır.**
+**Tarayıcı tabanlı radyo altyazısı ve çeviri aracı — ücretsiz, backend yok, API anahtarı gerekmez.**
 
 Telefon mikrofonunu herhangi bir radyo, telsiz veya WebSDR hoparlörüne tut — otomatik dil algılama ve çeviri ile canlı altyazı al. 15'ten fazla dilde ses tanıma ve Mors alfabesi (CW) çözme desteği.
 
 🔗 **[Canlı Demo](https://altunsumerve.github.io/radiosub)**
 
 > **Tasarım**: Retro CRT terminal / fosfor yeşili ekran teması
+
+---
+
+## Bu Araç Nedir — Ne Değildir
+
+**Ne yapar:**
+- Telefon/dizüstü mikrofonu ile radyo hoparlöründen ses yakalar
+- Tarayıcının dahili Web Speech API'sini kullanarak sesi metne dönüştürür
+- Konuşulan dili tespit eder ve ücretsiz halka açık API'lerle çevirir
+- Mors kodu (CW) sinyallerini tarayıcı içindeki FFT analizörü ile çözer
+
+**Ne değildir:**
+- ❌ Profesyonel bir simultane çeviri sistemi **değildir**
+- ❌ SDR donanımına doğrudan bağlanan bir sinyal işleme aracı değildir — RF sinyalini değil, mikrofondan gelen sesi okur
+- ❌ Şifreli, dijital ses (DMR/D-STAR/P25) veya ağır parazitli sinyallerde güvenilir çalışmaz
+- ❌ Kritik durumlarda insan tercüman yerine kullanılamaz
+
+**Dürüst beklenti:** Bu araç, mevcut ücretsiz servisleri akıllıca birleştiren bir **hibrit orkestrasyon aracıdır**. Kalitesi, dayandığı üçüncü taraf ses tanıma ve çeviri servislerine bağlıdır. Sonuçlar; ses kalitesine, aksana, konuşma hızına ve sinyal gücüne göre değişir.
 
 ---
 
@@ -19,6 +37,22 @@ Telefon mikrofonunu herhangi bir radyo, telsiz veya WebSDR hoparlörüne tut —
 4. Canlı altyazılar gerçek zamanlı olarak gelir
 
 Hepsi bu. Kurulum yok, hesap yok, sunucu yok.
+
+---
+
+## Yaklaşım: Hibrit Mimari
+
+RadioSub, uçtan uca eğitilmiş bir model **değildir**. Tarayıcı içinde ücretsiz servisleri birbirine bağlayan bir orkestratördür:
+
+| Katman | Servis | Neden |
+|--------|--------|-------|
+| Ses → Metin | Tarayıcının Web Speech API'si (Chrome/Edge) | Ücretsiz, dahili, anahtar gerekmez |
+| Dil tespiti | Google Translate resmi olmayan endpoint | Güvenilir, anahtar yok, CORS açık |
+| Çeviri | MyMemory (birincil) + Lingva (yedek) | Ücretsiz halka açık API'ler |
+| Mors çözme | Özel FFT tabanlı çözücü | Tarayıcıda yerel çalışır |
+
+**Avantaj:** Backend yok, API anahtarı yok, GitHub Pages'te ücretsiz yayınlanır.
+**Ödün:** Sonuç kalitesi, bu üçüncü taraf servislerinin sunduğu kadarıyla sınırlıdır.
 
 ---
 
@@ -52,7 +86,7 @@ START RX
 Her adımda: transkript → Google Translate dil tespit API'si
   ├─ Dil onaylandı? → "LANGUAGE DETECTED: ITALIAN (92%)"
   │   → Speech API İtalyancaya geçer → sürekli çevirir
-  └─ 30s'de bulunamazsa → "LANGUAGE NOT DETECTED — TRY AGAIN"
+  └─ 35s'de bulunamazsa → "LANGUAGE NOT DETECTED — TRY AGAIN"
 ```
 
 ---
@@ -88,7 +122,7 @@ Her adımda: transkript → Google Translate dil tespit API'si
 1. Radyoyu istediğin frekansa ayarla
 2. Telefonunda RadioSub'ı aç — **START RX** tıkla
 3. Telefonu radyo hoparlörüne tut
-4. Dil bilinmiyorsa **AUTO** modu kullan, biliyorsan **VOICE** seç
+4. Dil bilinmiyorsa **AUTO** modu, biliyorsan **VOICE** seç
 
 ### Mors Alfabesi (CW)
 1. **MORSE** modunu seç
@@ -100,6 +134,37 @@ Her adımda: transkript → Google Translate dil tespit API'si
 Arka plan gürültüsü olmadan daha temiz giriş için kablo kullan:
 - 3.5mm ses kablosu: radyo/alıcı kulaklık çıkışı → telefon mikrofon girişi
 - Ses, Otomatik ve Mors modlarında çalışır
+
+---
+
+## Sınırlamalar ve Bilinen Sorunlar
+
+Bu aracın zorlandığı durumlar konusunda dürüst olmak gerek:
+
+### Ses / Otomatik Mod
+- **Gürültülü sinyaller:** Yoğun QRM, QRN veya düşük SNR transkripsiyon kalitesini ciddi şekilde düşürür
+- **Birden fazla konuşmacı:** Web Speech API tek konuşmacılı ses için tasarlandı
+- **Hızlı veya aksanlı konuşma:** Hızlı konuşma, güçlü bölgesel aksanlar veya ana dili olmayan telaffuz tanıma doğruluğunu düşürür
+- **Kısa ifadeler:** Otomatik dil tespiti ~6 kelimeden kısa ifadelerde yanılabilir
+- **Benzer diller:** Tespit, yakın akraba dilleri karıştırabilir (İspanyolca/İtalyanca/Portekizce, Rusça/Ukraynaca)
+- **Tarayıcı bağımlılığı:** Web Speech API kalitesi Chrome sürümlerine göre değişir, Firefox'ta yoktur
+
+### Mors Modu
+- **Sinyal sönümlenmesi (QSB):** Uzun süreli sönümler karakter tespitini bozar
+- **Ani WPM değişiklikleri:** Çözücü hız değişiminden sonra ~5 işaret bekleyerek yeniden kalibre olur
+- **Yoğun parazit:** Birden fazla üst üste binen CW sinyali FFT tepe tespitini şaşırtır
+- **Standart dışı kısaltmalar:** Özel veya nadir prosignler `[pattern]` olarak görünür, anlamı çözülmez
+
+### Çeviri
+- **MyMemory günlük limiti:** Anonim kullanıcılar için 1000 kelime/gün — aşıldığında Lingva'ya düşer
+- **Teknik jargon:** Ücretsiz API'ler radyo terminolojisini, çağrı işaretlerini, Q-kodlarını sıklıkla yanlış çevirir
+- **Deyimler ve argo:** Birebir çeviri garip sonuçlar üretebilir
+- **Lingva çalışma süresi:** Topluluk barındırmalı sunucular zaman zaman çevrimdışı olur
+
+### Genel
+- **Arka plan gürültüsü:** Oda akustiği, fan, trafik gürültüsü sonuçları bozar
+- **Hoparlör seviyesi:** Çok yüksek → bozulma; çok düşük → kelime kayıpları
+- **Telefon mikrofon kalitesi:** Eski telefonlar veya kötü mikrofonlu dizüstüler daha kötü sonuç verir
 
 ---
 
@@ -117,6 +182,17 @@ Arka plan gürültüsü olmadan daha temiz giriş için kablo kullan:
 
 > ⚠️ **`file://` ile açma** — tarayıcı mikrofon iznini hatırlamaz, her açılışta sorar.
 > Lokal test için `http://localhost` kullan veya GitHub Pages'e deploy et.
+
+---
+
+## Yasal ve Etik Uyarı
+
+⚠️ **Her zaman yerel düzenlemelere uy.** Bazı ülkelerde:
+- Kamuya açık olmayan radyo iletişimlerinin kaydedilmesi veya yeniden yayınlanması kısıtlıdır
+- Amatör radyo QSO transkriptlerini izinsiz paylaşmak ham radyo etiğini ihlal edebilir
+- Belirli frekansların (örneğin polis, askeri) izlenmesi kısıtlı veya yasaktır
+
+Bu araç **kamu yayınlarını izleme, WebSDR keşfi, amatör radyo eğitim kullanımı ve kişisel dil öğrenme** amaçlıdır. Geliştirici, yanlış kullanımdan sorumlu değildir.
 
 ---
 
@@ -144,9 +220,11 @@ Arka plan gürültüsü olmadan daha temiz giriş için kablo kullan:
 | API | Amaç | Limit |
 |-----|------|-------|
 | Web Speech API | Konuşmadan metne | Tarayıcı dahili, ücretsiz |
-| Google Translate (resmi olmayan) | Dil tespiti | Anahtar yok, limit yok |
+| Google Translate (resmi olmayan) | Dil tespiti | Anahtar yok, belgelenmiş limit yok |
 | MyMemory | Çeviri (birincil) | Anonim 1000 kelime/gün |
 | Lingva | Çeviri (yedek) | Topluluk barındırmalı |
+
+> **Üçüncü taraf API'ler hakkında not:** RadioSub, geliştiricinin kontrol etmediği ücretsiz halka açık servislere bağımlıdır. Eğer MyMemory, Lingva veya Google Translate tespit endpoint'i şartlarını değiştirir veya çevrimdışı olursa, bir düzeltme yayınlanana kadar uygulamanın bazı kısımları çalışmayabilir.
 
 ---
 
@@ -169,6 +247,15 @@ radiosub/
 └── .gitignore
 ```
 
+---
+
+## Katkıda Bulunma
+
+Issue ve pull request'ler memnuniyetle karşılanır. Bir hata bildiriyorsan lütfen şunları ekle:
+- Tarayıcı + sürüm
+- Kullandığın mod (Otomatik / Ses / Mors)
+- Kaynak dil (biliniyorsa)
+- Ses örneği özellikleri (temiz / gürültülü / WebSDR / direkt kablo)
 
 ---
 
