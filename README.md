@@ -6,7 +6,7 @@ Telefon mikrofonunu herhangi bir radyo, telsiz veya WebSDR hoparlörüne tut —
 
 🔗 **[Canlı Demo](https://altunsumerve.github.io/radiosub)**
 
-> **Tasarım**: Modernize edilmiş retro CRT terminal estetiği — varsayılan açık gri tema ve karanlık (#0f0f0f) tema, Open Sans tipografisi, GNOME.org tarzı dil açılır menüsü
+> **Tasarım**: Modernize edilmiş retro CRT terminal estetiği — varsayılan açık gri tema ve karanlık (#0f0f0f) tema, Open Sans tipografisi, açılır menüsü
 > **Arayüz dilleri**: 11 — Türkçe, English, Deutsch, Español, 中文, Русский, Azərbaycanca, Қазақша, Kurdî, Zazakî, தமிழ்
 
 ---
@@ -69,7 +69,7 @@ RadioSub, uçtan uca eğitilmiş bir model **değildir**. Tarayıcı içinde üc
 | 📱 | **Mobil Öncelikli** | Android Chrome + mikrofon ile mükemmel çalışır — hoparlöre tut, altyazı gelir |
 | 🌗 | **Tema** | Varsayılan açık gri mod + karanlık mod (#0f0f0f) — tercih hatırlanır |
 | 🔤 | **Open Sans** | Tüm arayüzde okunabilirlik odaklı modern tipografi + Çince/Tamilce için Noto Sans SC / Noto Sans Tamil yedekleri |
-| 🌍 | **11 Arayüz Dili** | GNOME.org tarzı açılır menü: TR, EN, DE, ES, ZH, RU, AZ, KK, KU (Kurmancî), ZAZA (Zazakî), TA — ana dili adlarıyla, tercih kalıcı |
+| 🌍 | **11 Arayüz Dili** | Açılır menü: TR, EN, DE, ES, ZH, RU, AZ, KK, KU (Kurmancî), ZAZA (Zazakî), TA — ana dili adlarıyla, tercih kalıcı |
 | ✨ | **Modern UI (v1.2)** | Yumuşak gölgeli yuvarlatılmış kartlar, cam efektli başlık, gradyan aksiyon butonu, akıcı geçişler, erişilebilir odak durumları |
 | ⚡ | **Backend Yok** | Saf HTML / CSS / JS — GitHub Pages'te ücretsiz yayınlanır |
 
@@ -192,7 +192,7 @@ Bu aracın zorlandığı durumlar konusunda dürüst olmak gerek:
 > kullanıcı artık boş hata mesajlarıyla karşılaşmaz.
 >
 > **v1.2 iyileştirmeleri:** modernize UI (yuvarlatılmış kartlar, yumuşak gölgeler, cam başlık),
-> GNOME.org tarzı açılır menüyle 11 arayüz dili ve Çince (Noto Sans SC) ile Tamilce
+> Açılır menüyle 11 arayüz dili ve Çince (Noto Sans SC) ile Tamilce
 > (Noto Sans Tamil) için otomatik font yedeği.
 
 > ⚠️ **`file://` ile açma** — tarayıcı mikrofon iznini hatırlamaz, her açılışta sorar.
@@ -256,7 +256,7 @@ radiosub/
 │   ├── speech.js           Web Speech API sarmalayıcısı + VU metre
 │   ├── morse.js            CW çözücü (FFT + adaptif zamanlama)
 │   ├── translator.js       Çeviri + dil tespiti servisi
-│   └── i18n.js             11 dil desteği + GNOME tarzı açılır menü + operatör kılavuzu
+│   └── i18n.js             11 dil desteği + açılır menü + operatör kılavuzu
 ├── README.md               İngilizce dokümantasyon
 ├── README_TR.md            Türkçe dokümantasyon
 ├── LICENSE                 MIT
